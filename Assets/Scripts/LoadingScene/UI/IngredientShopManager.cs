@@ -23,6 +23,49 @@ public class IngredientShopManager : MonoBehaviour
 
     void Awake()
     {
+        // Auto-bind common references by name to reduce setup errors
+        if (ingredientShopPanel == null)
+        {
+            var canvas = FindObjectOfType<Canvas>();
+            if (canvas != null)
+            {
+                var panelTf = canvas.transform.Find("IngredientShopPanel");
+                if (panelTf != null) ingredientShopPanel = panelTf.gameObject;
+            }
+        }
+        if (ingredientShopPanel != null)
+        {
+            if (titleText == null)
+            {
+                var tf = ingredientShopPanel.transform.Find("TitleText");
+                if (tf != null) titleText = tf.GetComponent<Text>();
+            }
+            if (closeButton == null)
+            {
+                var tf = ingredientShopPanel.transform.Find("CloseButton");
+                if (tf != null) closeButton = tf.GetComponent<Button>();
+            }
+            if (ingredientListScroll == null)
+            {
+                var tf = ingredientShopPanel.transform.Find("IngredientListScroll");
+                if (tf != null) ingredientListScroll = tf.GetComponent<ScrollRect>();
+            }
+            if (ingredientListContent == null && ingredientListScroll != null)
+            {
+                var contentTf = ingredientListScroll.transform.Find("Viewport/Content");
+                if (contentTf != null) ingredientListContent = contentTf;
+            }
+            if (buyButton == null)
+            {
+                var tf = ingredientShopPanel.transform.Find("BuyButton");
+                if (tf != null) buyButton = tf.GetComponent<Button>();
+            }
+            if (playerMoneyText == null)
+            {
+                var tf = ingredientShopPanel.transform.Find("PlayerMoneyText");
+                if (tf != null) playerMoneyText = tf.GetComponent<Text>();
+            }
+        }
         if (closeButton != null)
         {
             closeButton.onClick.RemoveAllListeners();
@@ -53,6 +96,7 @@ public class IngredientShopManager : MonoBehaviour
         {
             ingredientShopPanel.SetActive(true);
         }
+        UIInputBlocker.IsBlocking = true;
         selectedIndex = -1;
         RefreshMoneyUI();
         PopulateIngredientList();
@@ -64,6 +108,7 @@ public class IngredientShopManager : MonoBehaviour
         {
             ingredientShopPanel.SetActive(false);
         }
+        UIInputBlocker.IsBlocking = false;
     }
 
     private void RefreshMoneyUI()
