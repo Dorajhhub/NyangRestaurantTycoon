@@ -22,20 +22,7 @@ public class RefrigeratorManager : MonoBehaviour
   public string countTextChild = "CountText";
   public string takeOutButtonChild = "TakeOutButton";
 
-  [Header("Ingredient Names By Index")] 
-  public List<string> ingredientNames = new List<string>
-  {
-    "토마토",   // 0
-    "양상추",   // 1
-    "치즈",     // 2
-    "빵",       // 3
-    "고기",     // 4
-    "양파",     // 5
-    "버섯",     // 6
-    "감자",     // 7
-    "당근",     // 8
-    "계란"      // 9
-  };
+  // Ingredient names are now provided by IngredientDatabase singleton
 
   private readonly Dictionary<int, IngredientRow> indexToRow = new Dictionary<int, IngredientRow>();
   private Coroutine rebuildCoroutine;
@@ -122,7 +109,7 @@ public class RefrigeratorManager : MonoBehaviour
     {
       int count = inventory[index];
       if (hideZeroCount && count <= 0) continue; // 0개는 표시하지 않음
-      string ingredientName = GetIngredientName(index);
+      string ingredientName = IngredientDatabase.Instance.GetIngredientName(index);
 
       GameObject rowObj = Instantiate(ingredientItemPrefab, contentRoot);
       // 타이틀을 가리지 않도록 항상 Content의 맨 마지막에 배치
@@ -187,14 +174,7 @@ public class RefrigeratorManager : MonoBehaviour
     }
   }
 
-  private string GetIngredientName(int index)
-  {
-    if (index >= 0 && index < ingredientNames.Count)
-    {
-      return ingredientNames[index];
-    }
-    return $"Ingredient {index}";
-  }
+  // Ingredient names are retrieved from IngredientDatabase; local method removed
 
   private IngredientRow BindRow(GameObject rowObj)
   {

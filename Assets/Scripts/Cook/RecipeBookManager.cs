@@ -35,21 +35,21 @@ public class RecipeBookManager : MonoBehaviour
         { CookingTool.Pot, "🍲 냄비" }
     };
 
-    private CookingTool? currentFilter = null; // null이면 전체 보기
+    private RecipeCategory? currentFilter = null; // null이면 전체 보기
 
     void Start()
     {
-        // 버튼 이벤트 연결
+        // 버튼 이벤트 연결 (카테고리 기준)
         if (allButton != null)
             allButton.onClick.AddListener(() => FilterRecipes(null));
         if (juiceButton != null)
-            juiceButton.onClick.AddListener(() => FilterRecipes(CookingTool.Juicer));
+            juiceButton.onClick.AddListener(() => FilterRecipes(RecipeCategory.Juice));
         if (sandwichButton != null)
-            sandwichButton.onClick.AddListener(() => FilterRecipes(CookingTool.Oven));
+            sandwichButton.onClick.AddListener(() => FilterRecipes(RecipeCategory.Sandwich));
         if (soupButton != null)
-            soupButton.onClick.AddListener(() => FilterRecipes(CookingTool.Pot));
+            soupButton.onClick.AddListener(() => FilterRecipes(RecipeCategory.Soup));
         if (mainDishButton != null)
-            mainDishButton.onClick.AddListener(() => FilterRecipes(CookingTool.Pan));
+            mainDishButton.onClick.AddListener(() => FilterRecipes(RecipeCategory.MainDish));
 
         // 초기에는 패널 닫기
         if (recipeBookPanel != null)
@@ -84,9 +84,9 @@ public class RecipeBookManager : MonoBehaviour
     /// <summary>
     /// 레시피 필터링 및 표시
     /// </summary>
-    private void FilterRecipes(CookingTool? tool)
+    private void FilterRecipes(RecipeCategory? category)
     {
-        currentFilter = tool;
+        currentFilter = category;
 
         // 기존 항목 삭제
         foreach (Transform child in recipeListContent)
@@ -96,9 +96,9 @@ public class RecipeBookManager : MonoBehaviour
 
         // 레시피 가져오기
         List<Recipe> recipes;
-        if (tool.HasValue)
+        if (category.HasValue)
         {
-            recipes = RecipeDatabase.Instance.GetRecipesByTool(tool.Value);
+            recipes = RecipeDatabase.Instance.GetRecipesByCategory(category.Value);
         }
         else
         {
@@ -186,7 +186,7 @@ public class RecipeBookManager : MonoBehaviour
         List<string> items = new List<string>();
         foreach (var ingredient in recipe.requiredIngredients)
         {
-            string name = RecipeDatabase.Instance.GetIngredientName(ingredient.Key);
+            string name = IngredientDatabase.Instance.GetIngredientName(ingredient.Key);
             items.Add($"{name} x{ingredient.Value}");
         }
         return string.Join(", ", items);

@@ -28,20 +28,7 @@ public class JuicerManager : MonoBehaviour
     public string increaseButtonChild = "IncreaseButton";
     public string decreaseButtonChild = "DecreaseButton";
 
-    [Header("Ingredient Names By Index")] 
-    public List<string> ingredientNames = new List<string>
-    { 
-        "토마토",   // 0
-        "양상추",   // 1
-        "치즈",     // 2
-        "빵",       // 3
-        "고기",     // 4
-        "양파",     // 5
-        "버섯",     // 6
-        "감자",     // 7
-        "당근",     // 8
-        "계란"      // 9
-    };
+    // Ingredient names are now provided by IngredientDatabase singleton
 
     [Header("Recipes")]
 
@@ -112,7 +99,7 @@ public class JuicerManager : MonoBehaviour
         {
             int count = tempInventory[index];
             if (count <= 0) continue;
-            string name = GetIngredientName(index);
+            string name = IngredientDatabase.Instance.GetIngredientName(index);
 
             GameObject rowObj = Instantiate(inventoryItemPrefab, inventoryContent);
 
@@ -177,14 +164,14 @@ public class JuicerManager : MonoBehaviour
 
             if (gameManager.playerStats.PlayerInventory[index] < requiredCount)
             {
-                Debug.LogError($"{GetIngredientName(index)}가 충분하지 않습니다.");
+                Debug.LogError($"{IngredientDatabase.Instance.GetIngredientName(index)}가 충분하지 않습니다.");
                 return;
             }
 
             var list = gameManager.playerStats.PlayerInventory;
             list[index] -= requiredCount;
             gameManager.playerStats.PlayerInventory = list;
-            Debug.Log($"차감 후: {GetIngredientName(index)} = {gameManager.playerStats.PlayerInventory[index]}");
+            Debug.Log($"차감 후: {IngredientDatabase.Instance.GetIngredientName(index)} = {gameManager.playerStats.PlayerInventory[index]}");
         }
 
         // Save
@@ -237,14 +224,7 @@ public class JuicerManager : MonoBehaviour
         return null;
     }
 
-    private string GetIngredientName(int index)
-    {
-        if (index >= 0 && index < ingredientNames.Count)
-        {
-            return ingredientNames[index];
-        }
-        return $"Ingredient {index}";
-    }
+    // Ingredient names are retrieved from IngredientDatabase; local method removed
 
     private InventoryRow BindRow(GameObject rowObj)
     {
