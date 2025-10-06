@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -63,6 +63,7 @@ public class GameManager : MonoBehaviour
                 Level = 1,
                 XP = 0,
                 Affection = 0,
+                Money = 1000,
                 Tutorial = false,
                 RefrigeratorInventory = new List<int> { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
                 PlayerInventory = new List<int> { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
@@ -81,6 +82,7 @@ public class GameManager : MonoBehaviour
                 Level = 1,
                 XP = 0,
                 Affection = 0,
+                Money = 1000,
                 Tutorial = false,
                 RefrigeratorInventory = new List<int> { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
                 PlayerInventory = new List<int> { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }

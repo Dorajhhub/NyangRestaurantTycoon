@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using UnityEngine;
 using SQLite4Unity3d;
 using UnityEngine.SceneManagement;
@@ -55,6 +55,7 @@ public class DatabaseManager : MonoBehaviour
             Level = 1, 
             XP = 0, 
             Affection = 0, 
+            Money = 1000,
             Tutorial = false,
             RefrigeratorInventory = new List<int> { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
             PlayerInventory = new List<int> { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
@@ -90,6 +91,30 @@ public class DatabaseManager : MonoBehaviour
         catch (System.Exception e)
         {
             Debug.LogWarning($"마이그레이션 검사 중 오류: {e.Message}");
+        }
+
+        // 마이그레이션: Money 컬럼이 없으면 추가 (기본값 1000)
+        try
+        {
+            bool hasMoney = false;
+            var pragma2 = _connection.DeferredQuery<PragmaTableInfo>("PRAGMA table_info(PlayerStats)");
+            foreach (var col in pragma2)
+            {
+                if (col.name == "Money")
+                {
+                    hasMoney = true;
+                    break;
+                }
+            }
+            if (!hasMoney)
+            {
+                _connection.Execute("ALTER TABLE PlayerStats ADD COLUMN Money INTEGER DEFAULT 1000");
+                Debug.Log("💰 Money 컬럼 추가됨 (기본 1000)");
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"Money 컬럼 마이그레이션 오류: {e.Message}");
         }
     }
 

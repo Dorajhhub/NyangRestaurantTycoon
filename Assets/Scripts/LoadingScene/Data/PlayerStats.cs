@@ -10,6 +10,7 @@ public class PlayerStats
     public int Level { get; set; }
     public int XP { get; set; }
     public int Affection { get; set; }
+    public int Money { get; set; }
 
     public bool Tutorial { get; set; }
     public string RefrigeratorInventoryJson { get; set; }

@@ -39,6 +39,21 @@ public class IngredientDatabase : MonoBehaviour
         "계란"      // 9
     };
 
+    [Header("재료 가격 목록 (index와 1:1 매핑)")]
+    public List<int> ingredientPrices = new List<int>
+    {
+        100, // 토마토
+        80,  // 양상추
+        150, // 치즈
+        120, // 빵
+        300, // 고기
+        90,  // 양파
+        130, // 버섯
+        110, // 감자
+        140, // 당근
+        160  // 계란
+    };
+
     private void Awake()
     {
         if (_instance != null && _instance != this)
@@ -62,5 +77,15 @@ public class IngredientDatabase : MonoBehaviour
     public List<string> GetAllIngredientNames()
     {
         return new List<string>(ingredientNames);
+    }
+
+    public int GetIngredientPrice(int index)
+    {
+        if (index >= 0 && index < ingredientPrices.Count)
+        {
+            return ingredientPrices[index];
+        }
+        // 가격 리스트가 짧을 경우 기본값
+        return 100;
     }
 }
