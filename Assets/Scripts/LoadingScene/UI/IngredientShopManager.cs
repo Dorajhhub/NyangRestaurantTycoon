@@ -17,9 +17,14 @@ public class IngredientShopManager : MonoBehaviour
     [Header("Child Names In Prefab")] 
     public string nameTextChild = "Text_IngredientName";
     public string priceTextChild = "Text_Price";
+    public string increaseButtonChild = "IncreaseButton";
+    public string decreaseButtonChild = "DecreaseButton";
+    public string quantityTextChild = "Text_Quantity";
 
     private GameManager gameManager;
     private int selectedIndex = -1;
+    private readonly Dictionary<int, int> indexToQuantity = new Dictionary<int, int>();
+    private readonly Dictionary<int, RowUI> indexToRow = new Dictionary<int, RowUI>();
 
     void Awake()
     {
@@ -126,6 +131,7 @@ public class IngredientShopManager : MonoBehaviour
             Destroy(ingredientListContent.GetChild(i).gameObject);
         }
 
+        indexToRow.Clear();
         var db = IngredientDatabase.Instance;
         List<string> names = db.GetAllIngredientNames();
         for (int index = 0; index < names.Count; index++)
@@ -142,28 +148,57 @@ public class IngredientShopManager : MonoBehaviour
     {
         Text nameText = FindChild<Text>(rowObj.transform, nameTextChild);
         Text priceText = FindChild<Text>(rowObj.transform, priceTextChild);
+        Text quantityText = FindChild<Text>(rowObj.transform, quantityTextChild);
+        Button incButton = FindChild<Button>(rowObj.transform, increaseButtonChild);
+        Button decButton = FindChild<Button>(rowObj.transform, decreaseButtonChild);
+
         if (nameText != null) nameText.text = name;
         if (priceText != null) priceText.text = $"가격: {price}원";
 
-        // 선택을 위해 Row 또는 내부 Button에 클릭 이벤트 연결
+        if (!indexToQuantity.ContainsKey(index)) indexToQuantity[index] = 0; // 기본 0개
+        if (quantityText != null) quantityText.text = indexToQuantity[index].ToString();
+
+        // 선택을 위해 Row 자체에 클릭 연결
         Button rowButton = rowObj.GetComponent<Button>();
-        if (rowButton == null)
-        {
-            rowButton = rowObj.AddComponent<Button>();
-        }
+        if (rowButton == null) rowButton = rowObj.AddComponent<Button>();
         rowButton.onClick.RemoveAllListeners();
         rowButton.onClick.AddListener(() => OnSelectIndex(rowObj, index));
+
+        // + / - 버튼 동작
+        if (incButton != null)
+        {
+            incButton.onClick.RemoveAllListeners();
+            incButton.onClick.AddListener(() => { OnSelectIndex(rowObj, index); AdjustQuantity(index, +1); });
+        }
+        if (decButton != null)
+        {
+            decButton.onClick.RemoveAllListeners();
+            decButton.onClick.AddListener(() => { OnSelectIndex(rowObj, index); AdjustQuantity(index, -1); });
+        }
+
+        indexToRow[index] = new RowUI
+        {
+            root = rowObj,
+            nameText = nameText,
+            priceText = priceText,
+            quantityText = quantityText,
+            incButton = incButton,
+            decButton = decButton,
+            rowButton = rowButton
+        };
     }
 
     private void OnSelectIndex(GameObject rowObj, int index)
     {
         selectedIndex = index;
-        // 선택 시 간단한 강조(배경 색)
-        var image = rowObj.GetComponent<Image>();
-        if (image != null)
+        // 선택 시 간단한 강조(배경 색) 및 다른 항목 원복
+        foreach (var kv in indexToRow)
         {
-            image.color = new Color(0.9f, 0.95f, 1f, 1f);
+            var img = kv.Value.root.GetComponent<Image>();
+            if (img != null) img.color = Color.white;
         }
+        var image = rowObj.GetComponent<Image>();
+        if (image != null) image.color = new Color(0.9f, 0.95f, 1f, 1f);
     }
 
     private void OnClickBuy()
@@ -179,8 +214,16 @@ public class IngredientShopManager : MonoBehaviour
             return;
         }
 
+        int qty = indexToQuantity.ContainsKey(selectedIndex) ? indexToQuantity[selectedIndex] : 0;
+        if (qty <= 0)
+        {
+            Debug.Log("수량을 선택하세요 (+ 버튼으로 수량 증가).");
+            return;
+        }
+
         int price = IngredientDatabase.Instance.GetIngredientPrice(selectedIndex);
-        if (gameManager.playerStats.Money < price)
+        int totalCost = price * qty;
+        if (gameManager.playerStats.Money < totalCost)
         {
             Debug.Log("잔액이 부족합니다.");
             return;
@@ -188,7 +231,7 @@ public class IngredientShopManager : MonoBehaviour
 
         // 차감 & 인벤토리 추가
         var stats = gameManager.playerStats;
-        stats.Money -= price;
+        stats.Money -= totalCost;
 
         List<int> inv = stats.PlayerInventory;
         // 방어적: 길이 보장
@@ -196,7 +239,7 @@ public class IngredientShopManager : MonoBehaviour
         {
             inv.Add(0);
         }
-        inv[selectedIndex] += 1;
+        inv[selectedIndex] += qty;
         stats.PlayerInventory = inv;
 
         // 저장
@@ -206,12 +249,42 @@ public class IngredientShopManager : MonoBehaviour
         }
 
         RefreshMoneyUI();
-        Debug.Log($"구매 완료: {IngredientDatabase.Instance.GetIngredientName(selectedIndex)}");
+        Debug.Log($"구매 완료: {IngredientDatabase.Instance.GetIngredientName(selectedIndex)} x{qty} (총 {totalCost}원)");
+
+        // 선택 수량 초기화 및 UI 갱신
+        indexToQuantity[selectedIndex] = 0;
+        if (indexToRow.TryGetValue(selectedIndex, out var row))
+        {
+            if (row.quantityText != null) row.quantityText.text = "0";
+        }
     }
 
     private T FindChild<T>(Transform root, string childName) where T : Component
     {
         Transform child = root.Find(childName);
         return child != null ? child.GetComponent<T>() : null;
+    }
+
+    private void AdjustQuantity(int index, int delta)
+    {
+        if (!indexToQuantity.ContainsKey(index)) indexToQuantity[index] = 0;
+        int q = indexToQuantity[index] + delta;
+        if (q < 0) q = 0;
+        indexToQuantity[index] = q;
+        if (indexToRow.TryGetValue(index, out var row))
+        {
+            if (row.quantityText != null) row.quantityText.text = q.ToString();
+        }
+    }
+
+    private class RowUI
+    {
+        public GameObject root;
+        public Text nameText;
+        public Text priceText;
+        public Text quantityText;
+        public Button incButton;
+        public Button decButton;
+        public Button rowButton;
     }
 }
