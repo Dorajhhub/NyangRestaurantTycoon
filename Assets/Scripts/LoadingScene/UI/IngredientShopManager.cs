@@ -214,6 +214,13 @@ public class IngredientShopManager : MonoBehaviour
             return;
         }
 
+        // 튜토리얼에서는 구매 불가
+        if (gameManager.playerStats.Tutorial == false)
+        {
+            Debug.Log("튜토리얼 진행 중에는 구매할 수 없습니다.");
+            return;
+        }
+
         int qty = indexToQuantity.ContainsKey(selectedIndex) ? indexToQuantity[selectedIndex] : 0;
         if (qty <= 0)
         {
@@ -233,14 +240,15 @@ public class IngredientShopManager : MonoBehaviour
         var stats = gameManager.playerStats;
         stats.Money -= totalCost;
 
-        List<int> inv = stats.PlayerInventory;
+        // 냉장고 인벤토리에 저장
+        List<int> inv = stats.RefrigeratorInventory;
         // 방어적: 길이 보장
         while (inv.Count <= selectedIndex)
         {
             inv.Add(0);
         }
         inv[selectedIndex] += qty;
-        stats.PlayerInventory = inv;
+        stats.RefrigeratorInventory = inv;
 
         // 저장
         if (gameManager.dbManager != null)
