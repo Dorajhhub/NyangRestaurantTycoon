@@ -22,3 +22,4 @@ UserSettings/
 Assembly-CSharp.csproj
 Assembly-CSharp-Editor.csproj
 MerryYellow.CodeAssist.Editor.csproj
+.meta
