@@ -1,0 +1,24 @@
+Assets/Adaptive Performance/
+Assets/Editor/
+Assets/Materials/
+Assets/Plugin/
+Assets/Plugins/
+Assets/Prefabs/
+Assets/Resources/
+Assets/Scenes/
+Assets/InputSystem_Actions.inputactions
+GeneratedAssets_deleted/
+Packages/
+NyangRestaurantTycoon.sln
+.utmp/
+.vscode/
+Library/
+Logs/
+Temp/
+obj/
+ProjectSettings/
+UserSettings/
+.vsconfig
+Assembly-CSharp.csproj
+Assembly-CSharp-Editor.csproj
+MerryYellow.CodeAssist.Editor.csproj
