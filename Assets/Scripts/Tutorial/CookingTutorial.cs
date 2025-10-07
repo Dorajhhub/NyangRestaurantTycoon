@@ -1,4 +1,4 @@
-﻿// 2025-09-13 AI-Tag
+// 2025-09-13 AI-Tag
 // This was created with the help of Assistant, a Unity Artificial Intelligence product.
 
 using UnityEngine;
@@ -153,6 +153,12 @@ public class CookingTutorial : MonoBehaviour
         animator.SetFloat("Speed", 0);
         animator.SetBool("isWalking", false);
         yield return new WaitForSeconds(2f);
+
+        // 주문 생성: 토마토 주스를 원함
+        var order = cat.GetComponent<CustomerOrder>();
+        if (order == null) order = cat.AddComponent<CustomerOrder>();
+        order.SetOrderByName("토마토 주스");
+        Debug.Log("🧾 손님 주문 생성: 토마토 주스");
 
         // 3. 빈 의자 찾기
         Transform targetChair = FindEmptyChair();
