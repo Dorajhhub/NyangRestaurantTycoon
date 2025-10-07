@@ -9,6 +9,7 @@ public class CustomerOrder : MonoBehaviour
     public string requestedRecipeName;
     public Recipe requestedRecipe;
     public bool isServed;
+    public bool isCanceled;
     public Transform exitTarget;
     public float exitDelaySeconds = 5f;
 
@@ -41,6 +42,13 @@ public class CustomerOrder : MonoBehaviour
         isServed = true;
         Debug.Log($"🍹 주문 서빙 완료: {requestedRecipeName}");
         StartPostServeFlow();
+    }
+
+    public void CancelOrder()
+    {
+        if (isCanceled) return;
+        isCanceled = true;
+        Debug.Log($"🛑 주문 취소: {requestedRecipeName}");
     }
 
     public void StartPostServeFlow()

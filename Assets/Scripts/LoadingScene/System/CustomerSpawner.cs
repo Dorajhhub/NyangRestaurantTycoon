@@ -124,8 +124,8 @@ public class CustomerSpawner : MonoBehaviour
         order.SetOrderByName(recipeName);
         Debug.Log($"🧾 손님 주문: {recipeName}");
 
-        // 인근 빈 의자 탐색 후 이동
-        Transform targetChair = FindEmptyChair();
+        // 인근 빈 의자 탐색 후 이동 (충돌 회피 및 없으면 퇴장)
+        Transform targetChair = FindSeatAvoidingCats();
         if (targetChair != null && agent != null)
         {
             agent.SetDestination(targetChair.position);
@@ -143,6 +143,13 @@ public class CustomerSpawner : MonoBehaviour
                 anim.SetBool("isWalking", false);
                 anim.SetFloat("Speed", 0f);
             }
+        }
+        else
+        {
+            // 자리가 없거나 주변에 고양이(Cat)가 있으면 주문 취소 후 퇴장
+            order.CancelOrder();
+            yield return StartCoroutine(ExitScene(agent, anim, order));
+            yield break;
         }
     }
 
@@ -164,5 +171,87 @@ public class CustomerSpawner : MonoBehaviour
             if (!occupied) return chair;
         }
         return null;
+    }
+
+    private Transform FindSeatAvoidingCats()
+    {
+        // 1차: 빈 의자 중 주변 3칸(임의로 반경 3m) 내 "Cat" 없으면 선택
+        List<Transform> candidates = new List<Transform>();
+        foreach (var chair in chairs)
+        {
+            if (chair == null) continue;
+            if (IsChairOccupied(chair)) continue;
+            if (!IsCatNearby(chair, 3f))
+            {
+                candidates.Add(chair);
+            }
+        }
+        if (candidates.Count > 0)
+        {
+            return candidates[Random.Range(0, candidates.Count)];
+        }
+
+        // 2차: 고양이가 있어도 빈 의자 중 하나라도 있으면 그쪽으로 (회피 실패 시에도 착석 허용할지 정책 결정; 여기서는 돌아감)
+        // 요구사항에 따라 고양이가 있으면 다른 쪽으로 가고, 없으면 돌아감 -> 빈 의자가 하나도 없거나 모두 주변에 Cat이 있으면 null 반환
+        foreach (var chair in chairs)
+        {
+            if (chair == null) continue;
+            if (!IsChairOccupied(chair))
+            {
+                // 모든 빈 의자 주변에 Cat이 있음 -> null
+            }
+        }
+        return null;
+    }
+
+    private bool IsChairOccupied(Transform chair)
+    {
+        Collider[] colliders = Physics.OverlapSphere(chair.position, 0.5f);
+        foreach (var col in colliders)
+        {
+            if (col != null && col.gameObject != null && col.gameObject.name == "Customer")
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private bool IsCatNearby(Transform chair, float radius)
+    {
+        Collider[] colliders = Physics.OverlapSphere(chair.position, radius);
+        foreach (var col in colliders)
+        {
+            if (col != null && col.gameObject != null && col.gameObject.name == "Cat")
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private IEnumerator ExitScene(NavMeshAgent agent, Animator anim, CustomerOrder order)
+    {
+        Transform exit = (order != null && order.exitTarget != null) ? order.exitTarget : spawnPoint;
+        if (agent != null && exit != null)
+        {
+            agent.SetDestination(exit.position);
+            while (agent.pathPending || agent.remainingDistance > agent.stoppingDistance)
+            {
+                if (anim != null)
+                {
+                    anim.SetBool("isWalking", true);
+                    anim.SetFloat("Speed", agent.velocity.magnitude);
+                }
+                yield return null;
+            }
+        }
+        if (anim != null)
+        {
+            anim.SetBool("isWalking", false);
+            anim.SetFloat("Speed", 0f);
+        }
+        yield return new WaitForSeconds(0.2f);
+        if (order != null) Destroy(order.gameObject);
     }
 }
