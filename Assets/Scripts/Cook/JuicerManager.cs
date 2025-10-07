@@ -5,6 +5,7 @@
 // This was created with the help of Assistant, a Unity Artificial Intelligence product.
 
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -34,6 +35,7 @@ public class JuicerManager : MonoBehaviour
 
     public List<Recipe> recipes = new List<Recipe>();
     private List<int> tempInventory; // 임시 인벤토리
+    private bool cookingInProgress;
 
     void Awake()
     {
@@ -135,6 +137,11 @@ public class JuicerManager : MonoBehaviour
     private void OnClickMix()
     {
         if (gameManager == null || gameManager.playerStats == null) return;
+        if (cookingInProgress)
+        {
+            Debug.Log("이미 조리 중입니다. 잠시만 기다려주세요.");
+            return;
+        }
 
         Recipe matchedRecipe = FindMatchingRecipe();
         if (matchedRecipe == null)
@@ -186,7 +193,10 @@ public class JuicerManager : MonoBehaviour
         // Refresh UI
         PopulateFromPlayerInventory();
 
-        Debug.Log($"성공적으로 믹싱 완료: {matchedRecipe.recipeName}!");
+        Debug.Log($"성공적으로 믹싱 시작: {matchedRecipe.recipeName}! 조리 시간 {matchedRecipe.cookingTime}초");
+        cookingInProgress = true;
+        if (mixButton != null) mixButton.interactable = false;
+        StartCoroutine(CookAndServe(matchedRecipe));
 
         if (gameManager.playerStats != null && gameManager.playerStats.Tutorial == false)
         {
@@ -249,5 +259,42 @@ public class JuicerManager : MonoBehaviour
         public Text countText;
         public Button increaseButton;
         public Button decreaseButton;
+    }
+
+    private IEnumerator CookAndServe(Recipe recipe)
+    {
+        float waitSeconds = Mathf.Max(0, recipe.cookingTime);
+        yield return new WaitForSeconds(waitSeconds);
+
+        // 손님 주문 검색 및 서빙
+        CustomerOrder targetOrder = null;
+        var allOrders = FindObjectsOfType<CustomerOrder>();
+        foreach (var order in allOrders)
+        {
+            if (order != null && !order.isServed)
+            {
+                // 이름으로 매칭 (요구 레시피가 null일 수도 있으므로 이름 우선)
+                bool nameMatch = !string.IsNullOrEmpty(order.requestedRecipeName) && order.requestedRecipeName == recipe.recipeName;
+                bool refMatch = order.requestedRecipe != null && order.requestedRecipe.recipeName == recipe.recipeName;
+                if (nameMatch || refMatch)
+                {
+                    targetOrder = order;
+                    break;
+                }
+            }
+        }
+
+        if (targetOrder != null)
+        {
+            targetOrder.MarkServed();
+            Debug.Log($"자동 서빙 완료: {recipe.recipeName}");
+        }
+        else
+        {
+            Debug.Log("서빙할 일치 주문을 찾지 못했습니다.");
+        }
+
+        if (mixButton != null) mixButton.interactable = true;
+        cookingInProgress = false;
     }
 }

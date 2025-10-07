@@ -7,6 +7,7 @@ public class CustomerOrder : MonoBehaviour
 {
     public string requestedRecipeName;
     public Recipe requestedRecipe;
+    public bool isServed;
 
     public void SetOrderByName(string recipeName)
     {
@@ -19,5 +20,11 @@ public class CustomerOrder : MonoBehaviour
         {
             requestedRecipe = null;
         }
+    }
+
+    public void MarkServed()
+    {
+        isServed = true;
+        Debug.Log($"🍹 주문 서빙 완료: {requestedRecipeName}");
     }
 }
