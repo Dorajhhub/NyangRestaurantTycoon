@@ -21,6 +21,7 @@ public class JuicerManager : MonoBehaviour
     public Transform inventoryContent; // 왼쪽 인벤토리 리스트 Content
     public GameObject inventoryItemPrefab; // 왼쪽 아이템 프리팹(NameText, CountText, IncreaseButton, DecreaseButton)
     public Button mixButton; // 섞기 버튼
+    public Text cookingTimerText; // 남은 시간 표시 텍스트 (옵션)
 
 
     [Header("Child Names In Prefab")] 
@@ -263,8 +264,25 @@ public class JuicerManager : MonoBehaviour
 
     private IEnumerator CookAndServe(Recipe recipe)
     {
-        float waitSeconds = Mathf.Max(0, recipe.cookingTime);
-        yield return new WaitForSeconds(waitSeconds);
+        float total = Mathf.Max(0, recipe.cookingTime);
+        float remaining = total;
+        if (cookingTimerText != null)
+        {
+            cookingTimerText.gameObject.SetActive(true);
+        }
+        while (remaining > 0f)
+        {
+            if (cookingTimerText != null)
+            {
+                cookingTimerText.text = $"남은 시간: {Mathf.CeilToInt(remaining)}초";
+            }
+            yield return null;
+            remaining -= Time.deltaTime;
+        }
+        if (cookingTimerText != null)
+        {
+            cookingTimerText.text = "완료!";
+        }
 
         // 손님 주문 검색 및 서빙
         CustomerOrder targetOrder = null;
@@ -296,5 +314,11 @@ public class JuicerManager : MonoBehaviour
 
         if (mixButton != null) mixButton.interactable = true;
         cookingInProgress = false;
+        if (cookingTimerText != null)
+        {
+            // 1초 정도 완료 표시 후 숨김
+            yield return new WaitForSeconds(1f);
+            cookingTimerText.gameObject.SetActive(false);
+        }
     }
 }
