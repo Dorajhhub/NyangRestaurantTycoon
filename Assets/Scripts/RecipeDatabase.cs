@@ -109,7 +109,6 @@ public class RecipeDatabase : MonoBehaviour
             return;
         }
         _instance = this;
-        DontDestroyOnLoad(gameObject);
 
         InitializeRecipes();
     }
