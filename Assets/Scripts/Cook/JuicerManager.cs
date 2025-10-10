@@ -37,6 +37,7 @@ public class JuicerManager : MonoBehaviour
     public List<Recipe> recipes = new List<Recipe>();
     private List<int> tempInventory; // 임시 인벤토리
     private bool cookingInProgress;
+    private readonly Dictionary<int, InventoryRow> indexToRow = new Dictionary<int, InventoryRow>();
 
     void Awake()
     {
@@ -98,6 +99,7 @@ public class JuicerManager : MonoBehaviour
             Destroy(inventoryContent.GetChild(i).gameObject);
         }
 
+        indexToRow.Clear();
         for (int index = 0; index < tempInventory.Count; index++)
         {
             int count = tempInventory[index];
@@ -114,6 +116,8 @@ public class JuicerManager : MonoBehaviour
             row.increaseButton.onClick.AddListener(() => AdjustIngredientCount(row.index, 1));
             row.decreaseButton.onClick.RemoveAllListeners();
             row.decreaseButton.onClick.AddListener(() => AdjustIngredientCount(row.index, -1));
+
+            indexToRow[index] = row;
         }
     }
 
@@ -133,6 +137,12 @@ public class JuicerManager : MonoBehaviour
         if (currentCount < 0) currentCount = 0;
 
         tempInventory[index] = currentCount;
+
+        // UI 즉시 반영
+        if (indexToRow.TryGetValue(index, out var row))
+        {
+            row.countText.text = currentCount.ToString();
+        }
     }
 
     private void OnClickMix()
