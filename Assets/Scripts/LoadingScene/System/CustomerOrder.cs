@@ -10,6 +10,7 @@ public class CustomerOrder : MonoBehaviour
     public Recipe requestedRecipe;
     public bool isServed;
     public bool isCanceled;
+    public int requestedCount = 1;
     public Transform exitTarget;
     public float exitDelaySeconds = 5f;
 
@@ -34,6 +35,12 @@ public class CustomerOrder : MonoBehaviour
         {
             requestedRecipe = null;
         }
+    }
+
+    public void SetOrder(string recipeName, int count)
+    {
+        SetOrderByName(recipeName);
+        requestedCount = Mathf.Max(1, count);
     }
 
     public void MarkServed()

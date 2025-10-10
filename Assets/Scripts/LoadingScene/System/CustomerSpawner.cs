@@ -140,7 +140,8 @@ public class CustomerSpawner : MonoBehaviour
             }
         }
         string recipeName = recipe != null ? recipe.recipeName : "토마토 주스"; // fallback
-        order.SetOrderByName(recipeName);
+        int wantCount = Random.Range(1, 3); // 1~2개 랜덤 수량
+        order.SetOrder(recipeName, wantCount);
         Debug.Log($"🧾 손님 주문: {recipeName}");
 
         // 인근 빈 의자 탐색 후 이동 (충돌 회피 및 없으면 퇴장)

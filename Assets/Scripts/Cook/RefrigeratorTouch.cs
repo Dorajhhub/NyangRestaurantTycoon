@@ -6,6 +6,7 @@ public class RefrigeratorTouch : MonoBehaviour
 {
   public GameObject refrigeratorPanelObject; // 냉장고 Panel이 붙어있는 GameObject를 Inspector에서 연결
   public GameObject orderPanelObject; // 주문 Panel이 붙어있는 GameObject를 Inspector에서 연결
+  public OrderPanelManager orderPanelManager; // 주문 패널 매니저
   public GameManager gameManager; // GameManager를 Inspector에서 연결
   public RefrigeratorManager refrigeratorManager; // UI 채우기용 매니저
 
@@ -56,8 +57,19 @@ public class RefrigeratorTouch : MonoBehaviour
           // 주문 패널 터치 처리
           else if (hit.transform.name == "OrderPanel")
           {
-            if (orderPanelObject != null)
+            if (orderPanelManager == null)
+            {
+              orderPanelManager = FindObjectOfType<OrderPanelManager>(true);
+            }
+            if (orderPanelManager != null)
+            {
+              var customer = FindObjectOfType<CustomerOrder>();
+              orderPanelManager.OpenWithCustomer(customer);
+            }
+            else if (orderPanelObject != null)
+            {
               orderPanelObject.SetActive(true);
+            }
           }
         }
       }
@@ -84,8 +96,19 @@ public class RefrigeratorTouch : MonoBehaviour
         // 주문 패널 클릭 처리
         else if (hit.transform.name == "orderPanel")
         {
-          if (orderPanelObject != null)
+          if (orderPanelManager == null)
+          {
+            orderPanelManager = FindObjectOfType<OrderPanelManager>(true);
+          }
+          if (orderPanelManager != null)
+          {
+            var customer = FindObjectOfType<CustomerOrder>();
+            orderPanelManager.OpenWithCustomer(customer);
+          }
+          else if (orderPanelObject != null)
+          {
             orderPanelObject.SetActive(true);
+          }
           UIInputBlocker.IsBlocking = true;
         }
       }
