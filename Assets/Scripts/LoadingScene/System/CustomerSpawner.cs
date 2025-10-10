@@ -109,15 +109,34 @@ public class CustomerSpawner : MonoBehaviour
             }
         }
 
-        // 주문 생성 (무작위 레시피) - 조리 기구 검증은 일단 생략
+        // 주문 생성: 플레이어가 보유한 조리 도구로 만들 수 있는 레시피 중 무작위
         var db = RecipeDatabase.Instance;
         Recipe recipe = null;
         if (db != null)
         {
             var all = db.GetAllRecipes();
-            if (all != null && all.Count > 0)
+            List<Recipe> candidates = new List<Recipe>();
+            List<int> ownedTools = (gameManager != null && gameManager.playerStats != null) ? gameManager.playerStats.OwnedToolIndices : new List<int> { (int)CookingTool.Juicer };
+            HashSet<CookingTool> ownedToolSet = new HashSet<CookingTool>();
+            foreach (var idx in ownedTools)
             {
-                recipe = all[Random.Range(0, all.Count)];
+                if (idx >= 0 && idx <= (int)CookingTool.Pot)
+                {
+                    ownedToolSet.Add((CookingTool)idx);
+                }
+            }
+
+            foreach (var r in all)
+            {
+                if (ownedToolSet.Contains(r.requiredTool))
+                {
+                    candidates.Add(r);
+                }
+            }
+
+            if (candidates.Count > 0)
+            {
+                recipe = candidates[Random.Range(0, candidates.Count)];
             }
         }
         string recipeName = recipe != null ? recipe.recipeName : "토마토 주스"; // fallback

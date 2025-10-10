@@ -56,6 +56,7 @@ public class DatabaseManager : MonoBehaviour
             XP = 0, 
             Affection = 0, 
             Money = 1000,
+            OwnedToolIndices = new List<int> { (int)CookingTool.Juicer },
             Tutorial = false,
             RefrigeratorInventory = new List<int> { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
             PlayerInventory = new List<int> { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
@@ -91,6 +92,30 @@ public class DatabaseManager : MonoBehaviour
         catch (System.Exception e)
         {
             Debug.LogWarning($"마이그레이션 검사 중 오류: {e.Message}");
+        }
+
+        // 마이그레이션: OwnedToolsJson 컬럼 추가
+        try
+        {
+            bool hasOwned = false;
+            var pragma3 = _connection.DeferredQuery<PragmaTableInfo>("PRAGMA table_info(PlayerStats)");
+            foreach (var col in pragma3)
+            {
+                if (col.name == "OwnedToolsJson")
+                {
+                    hasOwned = true;
+                    break;
+                }
+            }
+            if (!hasOwned)
+            {
+                _connection.Execute("ALTER TABLE PlayerStats ADD COLUMN OwnedToolsJson TEXT");
+                Debug.Log("🛠 OwnedToolsJson 컬럼 추가됨");
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"OwnedToolsJson 컬럼 마이그레이션 오류: {e.Message}");
         }
 
         // 마이그레이션: Money 컬럼이 없으면 추가 (기본값 1000)

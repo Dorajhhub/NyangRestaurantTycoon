@@ -11,6 +11,7 @@ public class PlayerStats
     public int XP { get; set; }
     public int Affection { get; set; }
     public int Money { get; set; }
+    public string OwnedToolsJson { get; set; }
 
     public bool Tutorial { get; set; }
     public string RefrigeratorInventoryJson { get; set; }
@@ -43,6 +44,24 @@ public class PlayerStats
         set
         {
             PlayerInventoryJson = JsonConvert.SerializeObject(value);
+        }
+    }
+
+    [Ignore]
+    public List<int> OwnedToolIndices
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(OwnedToolsJson))
+            {
+                // 기본: Juicer 보유
+                return new List<int> { (int)CookingTool.Juicer };
+            }
+            return JsonConvert.DeserializeObject<List<int>>(OwnedToolsJson);
+        }
+        set
+        {
+            OwnedToolsJson = JsonConvert.SerializeObject(value);
         }
     }
 }
