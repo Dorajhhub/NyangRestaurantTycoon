@@ -27,9 +27,23 @@ public class DatabaseManager : MonoBehaviour
     void Awake()
     {
         dbPath = Path.Combine(Application.persistentDataPath, "game.db");
-        bool isNew = !File.Exists(dbPath);
+        try
+        {
+            string dir = Path.GetDirectoryName(dbPath);
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"DB 디렉토리 생성 실패: {e.Message}");
+        }
 
-        _connection = new SQLiteConnection(dbPath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create);
+        bool isNew = !File.Exists(dbPath);
+        Debug.Log($"📁 DB Path: {dbPath}");
+
+        _connection = new SQLiteConnection(
+            dbPath,
+            SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.FullMutex
+        );
         InitializeDatabase();
 
         if (isNew)
@@ -42,6 +56,30 @@ public class DatabaseManager : MonoBehaviour
         }
 
         IsReady = true;
+    }
+
+    void OnApplicationPause(bool pause)
+    {
+        if (pause)
+        {
+            try { _connection?.Dispose(); } catch {}
+        }
+        else
+        {
+            if (_connection == null && !string.IsNullOrEmpty(dbPath))
+            {
+                _connection = new SQLiteConnection(
+                    dbPath,
+                    SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.FullMutex
+                );
+            }
+        }
+    }
+
+    void OnApplicationQuit()
+    {
+        try { _connection?.Dispose(); } catch {}
+        _connection = null;
     }
 
     IEnumerator HandleNewDatabase()

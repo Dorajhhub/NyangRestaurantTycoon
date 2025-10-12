@@ -1,0 +1,9 @@
+<linker>
+  <assembly fullname="Assembly-CSharp" preserve="all"/>
+  <assembly fullname="netstandard" preserve="all"/>
+  <assembly fullname="System.Core" preserve="all"/>
+  <assembly fullname="System" preserve="all"/>
+  <assembly fullname="mscorlib" preserve="all"/>
+  <assembly fullname="Newtonsoft.Json" preserve="all"/>
+  <assembly fullname="SQLite4Unity3d" preserve="all"/>
+</linker>
